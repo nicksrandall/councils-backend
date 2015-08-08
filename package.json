@@ -11,6 +11,8 @@
     "debug": "~2.2.0",
     "express": "~4.13.1",
     "jade": "~1.11.0",
+    "lodash.find": "^3.2.1",
+    "lodash.merge": "^3.3.2",
     "morgan": "~1.6.1",
     "node-compass": "0.2.3",
     "request": "^2.60.0",
