@@ -4,7 +4,7 @@ var request = require('request');
 var j = request.jar();
 var cookieRequest = request.defaults({jar: j});
 var find = require('lodash.find');
-var merge = require('lodash.merge');
+var fs = require('fs');
 
 /* GET users listing. */
 router
@@ -46,7 +46,7 @@ router
         return JSON.parse(body).largeUri;
       })
       .then(function (url) {
-        cookieRequest('https://lds.org'+url, function (err, resp, body) {
+        cookieRequest({url:'https://lds.org'+url, encoding: null}, function (err, resp, body) {
           profile.profileImage = "data:" + resp.headers["content-type"] + ";base64," + new Buffer(body).toString('base64');
           res.json(profile);
         })
