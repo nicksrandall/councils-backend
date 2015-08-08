@@ -12,24 +12,43 @@ router
     res.render('api', {});
   })
   .post('/me', function(req, res, next) {
-    var me = {};
+    var profile = {};
     signIn(req.body.name, req.body.pass)
       .then(function () {
         return new Promise(function (resolve) {
           cookieRequest('https://www.lds.org/mobiledirectory/services/v2/ldstools/current-user-detail', function (err, resp, body) {
             result = JSON.parse(body);
+            var me = {};
             me.individualId = result.individualId;
             me.homeUnitNbr = result.homeUnitNbr;
             resolve(me);
           });
-        })
-        .then(function (me) {
+        });
+      })
+      .then(function (me) {
+        return new Promise(function (resolve) {
           cookieRequest('https://www.lds.org/directory/services/ludrs/1.1/unit/roster/'+me.homeUnitNbr+'/ADULTS', function (err, resp, body) {
             var result = JSON.parse(body);
-            var profile = find(result, function (record) { return record.individualId === me.individualId; }) || {};
+            profile = find(result, function (record) { return record.individualId === me.individualId; }) || {};
             profile.homeUnitNbr = me.homeUnitNbr;
-            res.json(profile);
+            resolve(profile);
           });
+        });
+      })
+      .then(function (profile) {
+        return new Promise(function (resolve, reject) {
+          cookieRequest('https://lds.org/directory/services/ludrs/photo/url/'+profile.individualId+'/individual', function (err, resp, body) {
+            resolve(body);
+          });
+        });
+      })
+      .then(function (body) {
+        return JSON.parse(body).largeUri;
+      })
+      .then(function (url) {
+        cookieRequest('https://lds.org'+url, function (err, resp, body) {
+          profile.profileImage = "data:" + resp.headers["content-type"] + ";base64," + new Buffer(body).toString('base64');
+          res.json(profile);
         })
       });
   })
