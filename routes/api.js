@@ -95,6 +95,27 @@ router
         cookieRequest('https://lds.org'+url)
           .pipe(res);
       });
+  })
+  .post('/push', function(req, res, next) {
+    // send push notification using ionic!
+    // 
+    var b64 = new Buffer('ad5e210885b7a36e7c133970566de8dd699a5b67f4fd06fe').toString('base64');
+    request({
+      url: 'https://push.ionic.io/api/v1/push',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Ionic-Application-Id': '817eddde',
+        'Authorization': 'Basic ' + b64
+      },
+      body: {
+        tokens: req.body.tokens,
+        notification: {
+          alert: req.body.message
+        }
+      },
+      json: true
+    }).pipe(res);
   });
 
 function signIn (name, pass) {
