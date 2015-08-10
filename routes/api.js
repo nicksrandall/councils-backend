@@ -35,6 +35,17 @@ router
           });
         });
       })
+      .then(function (me) {
+        return new Promise(function (resolve) {
+          cookieRequest('https://www.lds.org/mobiledirectory/services/ludrs/1.1/mem/mobile/member-detaillist-with-callings/'+me.homeUnitNbr, function (err, resp, body) {
+            var result = JSON.parse(body);
+            var calling = find(result.callings, function (record) { return record.individualId == me.individualId; }) || {callingName: 'none', groupName: 'none'};
+            profile.groupName = calling.groupName;
+            profile.callingName = calling.callingName;
+            resolve(profile);
+          });
+        });
+      })
       .then(function (profile) {
         return new Promise(function (resolve, reject) {
           cookieRequest('https://lds.org/directory/services/ludrs/photo/url/'+profile.individualId+'/individual', function (err, resp, body) {
