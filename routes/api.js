@@ -1,4 +1,5 @@
 var express = require('express');
+var tough = require('tough-cookie');
 var router = express.Router();
 var request = require('request');
 var j = request.jar();
@@ -16,7 +17,7 @@ router
     signIn(req.body.name, req.body.pass)
       .then(function () {
         return new Promise(function (resolve) {
-          cookieRequest('https://www.lds.org/mobiledirectory/services/v2/ldstools/current-user-detail', function (err, resp, body) {
+          cookieRequest({'https://www.lds.org/mobiledirectory/services/v2/ldstools/current-user-detail', function (err, resp, body) {
             result = JSON.parse(body);
             var me = {};
             me.individualId = result.individualId;
@@ -130,6 +131,7 @@ router
   });
 
 function signIn (name, pass) {
+  j = request.jar();
   var options = {
     url: 'https://signin.lds.org/login.html',
     form: {

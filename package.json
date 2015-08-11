@@ -16,7 +16,8 @@
     "morgan": "~1.6.1",
     "node-compass": "0.2.3",
     "request": "^2.60.0",
-    "serve-favicon": "~2.3.0"
+    "serve-favicon": "~2.3.0",
+    "tough-cookie": "^2.0.0"
   },
   "engines": {
     "node": "0.12.x"
