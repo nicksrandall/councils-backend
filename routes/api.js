@@ -17,7 +17,7 @@ router
     signIn(req.body.name, req.body.pass)
       .then(function () {
         return new Promise(function (resolve) {
-          cookieRequest({'https://www.lds.org/mobiledirectory/services/v2/ldstools/current-user-detail', function (err, resp, body) {
+          cookieRequest('https://www.lds.org/mobiledirectory/services/v2/ldstools/current-user-detail', function (err, resp, body) {
             result = JSON.parse(body);
             var me = {};
             me.individualId = result.individualId;
