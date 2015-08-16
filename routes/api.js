@@ -6,6 +6,7 @@ var j = request.jar();
 var cookieRequest = request.defaults({jar: j});
 var find = require('lodash.find');
 var fs = require('fs');
+var cloudinary = require('cloudinary');
 
 /* GET users listing. */
 router
@@ -80,6 +81,15 @@ router
         cookieRequest('https://www.lds.org/directory/services/ludrs/1.1/unit/roster/'+unitNumber+'/ADULTS')
           .pipe(res);
       });
+  })
+  .post('/upload', function(req, res, next) {
+    var stream = cloudinary.uploader.upload_stream(function(result) {
+      res.json(result);
+    }, { 
+      public_id: req.body.title 
+    });
+    
+    fs.createReadStream(req.files.image.path, {encoding: 'binary'}).on('data', stream.write).on('end', stream.end);
   })
   .post('/photo', function(req, res, next) {
     signIn(req.body.name, req.body.pass)
