@@ -2,8 +2,8 @@ var express = require('express');
 var tough = require('tough-cookie');
 var router = express.Router();
 var request = require('request');
-var j = request.jar();
-var cookieRequest = request.defaults({jar: j});
+// var j = request.jar();
+// var cookieRequest = request.defaults({jar: j});
 var find = require('lodash.find');
 var fs = require('fs');
 var path = require('path');
@@ -17,11 +17,17 @@ router
     res.render('api', {});
   })
   .post('/me', function(req, res, next) {
-    var profile = {};
+    var profile = {}, jar;
     signIn(req.body.name, req.body.pass)
-      .then(function () {
+      .then(function (j) {
+        jar = j;
         return new Promise(function (resolve) {
-          cookieRequest('https://www.lds.org/mobiledirectory/services/v2/ldstools/current-user-detail', function (err, resp, body) {
+          request({
+            jar: jar,
+            url: 'https://www.lds.org/mobiledirectory/services/v2/ldstools/current-user-detail'
+          },
+          function (err, resp, body) {
+            console.log('current');
             result = JSON.parse(body);
             var me = {};
             me.individualId = result.individualId;
@@ -32,7 +38,11 @@ router
       })
       .then(function (me) {
         return new Promise(function (resolve) {
-          cookieRequest('https://www.lds.org/directory/services/ludrs/1.1/unit/roster/'+me.homeUnitNbr+'/ADULTS', function (err, resp, body) {
+          request({
+            jar: jar,
+            url: 'https://www.lds.org/directory/services/ludrs/1.1/unit/roster/'+me.homeUnitNbr+'/ADULTS'
+          }, function (err, resp, body) {
+            console.log('roster');
             var result = JSON.parse(body);
             profile = find(result, function (record) { return record.individualId === me.individualId; }) || {};
             profile.homeUnitNbr = me.homeUnitNbr;
@@ -42,7 +52,11 @@ router
       })
       .then(function (me) {
         return new Promise(function (resolve) {
-          cookieRequest('https://www.lds.org/mobiledirectory/services/ludrs/1.1/mem/mobile/member-detaillist-with-callings/'+me.homeUnitNbr, function (err, resp, body) {
+          request({
+            jar: jar,
+            url: 'https://www.lds.org/mobiledirectory/services/ludrs/1.1/mem/mobile/member-detaillist-with-callings/'+me.homeUnitNbr
+          }, function (err, resp, body) {
+            console.log('calling');
             var result = JSON.parse(body);
             var calling = find(result.callings, function (record) { return record.individualId == me.individualId; }) || {callingName: 'none', groupName: 'none'};
             profile.groupName = calling.groupName;
@@ -53,7 +67,10 @@ router
       })
       .then(function (profile) {
         return new Promise(function (resolve, reject) {
-          cookieRequest('https://lds.org/directory/services/ludrs/photo/url/'+profile.individualId+'/individual', function (err, resp, body) {
+          request({
+            jar: jar,
+            url: 'https://lds.org/directory/services/ludrs/photo/url/'+profile.individualId+'/individual'
+          }, function (err, resp, body) {
             resolve(body);
           });
         });
@@ -69,14 +86,23 @@ router
         }, { 
           public_id: 'councils_' + profile.individualId
         });
-        cookieRequest({url:'https://lds.org'+url, encoding: null}).pipe(stream);
+        request({
+          jar: jar,
+          url:'https://lds.org'+url, 
+          encoding: null
+        }).pipe(stream);
       });
   })
   .post('/unit', function(req, res, next) {
+    var jar;
     signIn(req.body.name, req.body.pass)
-      .then(function () {
+      .then(function (j) {
+        jar = j;
         return new Promise(function (resolve, reject) {
-          cookieRequest('https://www.lds.org/mobiledirectory/services/ludrs/1.1/mem/mobile/current-user-unitNo', function (err, resp, body) {
+          request({
+            jar: jar,
+            url: 'https://www.lds.org/mobiledirectory/services/ludrs/1.1/mem/mobile/current-user-unitNo'
+          }, function (err, resp, body) {
             resolve(body);
           });
         });
@@ -85,8 +111,10 @@ router
         return JSON.parse(body).message;
       })
       .then(function (unitNumber) {
-        cookieRequest('https://www.lds.org/directory/services/ludrs/1.1/unit/roster/'+unitNumber+'/ADULTS')
-          .pipe(res);
+        request({
+          jar: jar,
+          url: 'https://www.lds.org/directory/services/ludrs/1.1/unit/roster/'+unitNumber+'/ADULTS'
+        }).pipe(res);
       });
   })
   .post('/upload/:id', upload.single('image'), function(req, res, next) {
@@ -106,10 +134,15 @@ router
     });
   })
   .post('/photo', function(req, res, next) {
+    var jar;
     signIn(req.body.name, req.body.pass)
-      .then(function () {
+      .then(function (j) {
+        jar = j;
         return new Promise(function (resolve, reject) {
-          cookieRequest('https://www.lds.org/mobiledirectory/services/ludrs/1.1/mem/mobile/current-user-id', function (err, resp, body) {
+          request({
+            jar: jar,
+            url: 'https://www.lds.org/mobiledirectory/services/ludrs/1.1/mem/mobile/current-user-id'
+          }, function (err, resp, body) {
             resolve(body);
           });
         });
@@ -119,7 +152,10 @@ router
       // })
       .then(function (individualId) {
         return new Promise(function (resolve, reject) {
-          cookieRequest('https://lds.org/directory/services/ludrs/photo/url/'+individualId+'/individual', function (err, resp, body) {
+          request({
+            jar: jar,
+            url: 'https://lds.org/directory/services/ludrs/photo/url/'+individualId+'/individual'
+          }, function (err, resp, body) {
             resolve(body);
           });
         });
@@ -128,8 +164,10 @@ router
         return JSON.parse(body).largeUri;
       })
       .then(function (url) {
-        cookieRequest('https://lds.org'+url)
-          .pipe(res);
+        request({
+          jar: jar,
+          url: 'https://lds.org'+url
+        }).pipe(res);
       });
   })
   .post('/push', function(req, res, next) {
@@ -155,16 +193,19 @@ router
   });
 
 function signIn (name, pass) {
-  j = request.jar();
+  var j = request.jar();
   var options = {
     url: 'https://signin.lds.org/login.html',
     form: {
       username: name,
       password: pass
-    }
+    },
+    jar: j
   };
   return new Promise(function (resolve) {
-    return cookieRequest.post(options, resolve);
+    return request.post(options, function () {
+      resolve(j);
+    });
   });
 }
 
