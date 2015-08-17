@@ -6,7 +6,10 @@ var j = request.jar();
 var cookieRequest = request.defaults({jar: j});
 var find = require('lodash.find');
 var fs = require('fs');
+var path = require('path');
 var cloudinary = require('cloudinary');
+var multer  = require('multer')
+var upload = multer({ dest: 'uploads/' })
 
 /* GET users listing. */
 router
@@ -59,10 +62,14 @@ router
         return JSON.parse(body).largeUri;
       })
       .then(function (url) {
-        cookieRequest({url:'https://lds.org'+url, encoding: null}, function (err, resp, body) {
-          profile.profileImage = "data:" + resp.headers["content-type"] + ";base64," + new Buffer(body).toString('base64');
+        var stream = cloudinary.uploader.upload_stream(function(result) {
+          console.log(result);
+          profile.profileImage = 'https://res.cloudinary.com/hgzoysu4o/image/upload/c_fill,g_face,h_250,w_250/v1439767739/' + result.public_id + '.png';
           res.json(profile);
-        })
+        }, { 
+          public_id: 'councils_' + profile.individualId
+        });
+        cookieRequest({url:'https://lds.org'+url, encoding: null}).pipe(stream);
       });
   })
   .post('/unit', function(req, res, next) {
@@ -82,14 +89,21 @@ router
           .pipe(res);
       });
   })
-  .post('/upload', function(req, res, next) {
+  .post('/upload', upload.single('image'), function(req, res, next) {
     var stream = cloudinary.uploader.upload_stream(function(result) {
-      res.json(result);
+      res.json({
+        url: 'https://res.cloudinary.com/hgzoysu4o/image/upload/c_fill,g_face,h_250,w_250/v1439767739/' + result.public_id + '.png',
+        worked: true,
+      });
     }, { 
-      public_id: req.body.title 
+      public_id: 'councils_' + req.body.individualId
     });
     
-    fs.createReadStream(req.files.image.path, {encoding: 'binary'}).on('data', stream.write).on('end', stream.end);
+    var dest = path.resolve(__dirname, '../', req.file.path);
+
+    fs.createReadStream(dest).pipe(stream).on('end', function() {
+      fs.unlink(dest);
+    });
   })
   .post('/photo', function(req, res, next) {
     signIn(req.body.name, req.body.pass)

@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "CLOUDINARY_URL=cloudinary://998278928858448:UEwVD3HkmwlP-QZVmDB_6HNBOD0@hgzoysu4o node ./bin/www"
   },
   "dependencies": {
     "body-parser": "~1.13.2",
@@ -15,6 +15,7 @@
     "lodash.find": "^3.2.1",
     "lodash.merge": "^3.3.2",
     "morgan": "~1.6.1",
+    "multer": "^1.0.3",
     "node-compass": "0.2.3",
     "request": "^2.60.0",
     "serve-favicon": "~2.3.0",
