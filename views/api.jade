@@ -18,12 +18,9 @@ block content
     input(type='password', placeholder='password', name='pass')
     button(type='submit') Test
 
-  form(method='post', action='/api/upload', enctype='multipart/form-data')
-      p
-        | Public ID: 
-        input(type='text', name='individualId')
-      p
-        | Image: 
-        input(type='file', name='image')
-      p
-        input(type='submit', value='Upload')
+  form(method='post', action='/api/upload/3744678537', enctype='multipart/form-data')
+    p
+      | Image: 
+      input(type='file', name='image')
+    p
+      input(type='submit', value='Upload')

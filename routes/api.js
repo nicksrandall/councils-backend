@@ -89,14 +89,14 @@ router
           .pipe(res);
       });
   })
-  .post('/upload', upload.single('image'), function(req, res, next) {
+  .post('/upload/:id', upload.single('image'), function(req, res, next) {
     var stream = cloudinary.uploader.upload_stream(function(result) {
       res.json({
         url: 'https://res.cloudinary.com/hgzoysu4o/image/upload/c_fill,g_face,h_250,w_250/v1439767739/' + result.public_id + '.png',
         worked: true,
       });
     }, { 
-      public_id: 'councils_' + req.body.individualId
+      public_id: 'councils_' + req.params.id
     });
     
     var dest = path.resolve(__dirname, '../', req.file.path);
