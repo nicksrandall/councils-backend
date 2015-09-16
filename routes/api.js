@@ -5,6 +5,7 @@ var request = require('request');
 // var j = request.jar();
 // var cookieRequest = request.defaults({jar: j});
 var find = require('lodash.find');
+var pick = require('lodash.pick');
 var fs = require('fs');
 var path = require('path');
 var cloudinary = require('cloudinary');
@@ -190,6 +191,9 @@ router
       },
       json: true
     }).pipe(res);
+  })
+  .get('/hymns', function (req, res, next) {
+    res.json(require('./hymns'));
   });
 
 function signIn (name, pass) {
