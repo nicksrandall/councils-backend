@@ -175,6 +175,12 @@ router
     // send push notification using ionic!
     // 
     var b64 = new Buffer('ad5e210885b7a36e7c133970566de8dd699a5b67f4fd06fe').toString('base64');
+    var notification = {
+      alert: req.body.message
+    };
+    if (req.body.title) {
+      notification.title = req.body.title;
+    }
     request({
       url: 'https://push.ionic.io/api/v1/push',
       method: 'POST',
@@ -184,10 +190,8 @@ router
         'Authorization': 'Basic ' + b64
       },
       body: {
-        tokens: req.body.tokens,
-        notification: {
-          alert: req.body.message
-        }
+        user_ids: req.body.user_ids,
+        notification: notification
       },
       json: true
     }).pipe(res);
