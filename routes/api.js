@@ -174,7 +174,7 @@ router
   .post('/push', function(req, res, next) {
     // send push notification using ionic!
     // 
-    var b64 = new Buffer('1182b23bfcecbdbc9ecf597b287f981b1c89f19a0629c94f').toString('base64');
+    var b64 = new Buffer('7b3375f118e4a2f4af112eae9286d4ad12e4cb0c9ee6d452').toString('base64');
     var notification = {
       alert: req.body.message
     };
