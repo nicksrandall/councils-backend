@@ -174,7 +174,7 @@ router
   .post('/push', function(req, res, next) {
     // send push notification using ionic!
     // 
-    var b64 = new Buffer('ad5e210885b7a36e7c133970566de8dd699a5b67f4fd06fe').toString('base64');
+    var b64 = new Buffer('1182b23bfcecbdbc9ecf597b287f981b1c89f19a0629c94f').toString('base64');
     var notification = {
       alert: req.body.message
     };
@@ -186,7 +186,7 @@ router
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Ionic-Application-Id': '817eddde',
+        'X-Ionic-Application-Id': '683c86a8',
         'Authorization': 'Basic ' + b64
       },
       body: {
